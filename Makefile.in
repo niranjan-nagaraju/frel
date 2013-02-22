@@ -1,0 +1,76 @@
+# Makefile for frel.
+#
+# lorg0r <lorgor@yahoo.com>
+#
+# $Id: Makefile.in,v 1.5 2001/01/13 22:27:10 asdfg Exp $
+
+srcdir		= @srcdir@
+VPATH		= @srcdir@
+
+install_prefix	=
+prefix		= @prefix@
+exec_prefix	= @exec_prefix@
+sbindir		= @sbindir@
+man8dir		= @mandir@/man8
+
+CC		= @CC@
+CFLAGS		= @CFLAGS@ $(PCAPINCS) $(LNETINCS) $(LNETDEFS)
+LDFLAGS		= @LDFLAGS@
+LIBS		= $(PCAPLIBS) $(LNETLIBS) @LIBS@
+
+INSTALL		= @INSTALL@
+INSTALL_PROGRAM	= @INSTALL_PROGRAM@
+INSTALL_DATA	= @INSTALL_DATA@
+
+PCAPDIR		= $(srcdir)/libpcap-0.5
+PCAPINCS	= -I$(PCAPDIR)
+PCAPLIBS	= -L$(PCAPDIR) -lpcap
+PCAPDEP		= $(PCAPDIR)/pcap.h $(PCAPDIR)/libpcap.a
+
+LNETDIR		= $(srcdir)/Libnet-1.0
+LNETINCS	= -I$(LNETDIR)/include -I$(LNETDIR)/include/libnet
+LNETLIBS	= -L$(LNETDIR)/lib `$(LNETDIR)/libnet-config --libs`
+LNETDEP		= $(LNETDIR)/include/libnet.h $(LNETDIR)/libnet.a
+LNETDEFS	= `$(LNETDIR)/libnet-config --defines`
+
+SRCS		= attack.c frel.c ip_frag.c list.c misc.c print.c \
+		  send.c sniff.c tcp_seg.c wrappers.c
+OBJS		= attack.o frel.o ip_frag.o list.o misc.o print.o \
+		  send.o sniff.o tcp_seg.o wrappers.o
+
+all: frel
+
+frel: $(PCAPDEP) $(LNETDEP) $(OBJS)
+	$(CC) -o $@ $(OBJS) $(CFLAGS) $(LDFLAGS) $(LIBS)
+
+$(PCAPDEP):
+	cd $(PCAPDIR); $(MAKE)
+
+$(LNETDEP):
+	cd $(LNETDIR); $(MAKE)
+
+install: all
+	$(srcdir)/mkinstalldirs $(install_prefix)$(sbindir)
+	$(srcdir)/mkinstalldirs $(install_prefix)$(man8dir)
+	$(INSTALL_PROGRAM) -m 755 frel $(install_prefix)$(sbindir)
+	$(INSTALL_DATA) frel.8 $(install_prefix)$(man8dir)
+
+uninstall:
+	rm -f $(install_prefix)$(sbindir)/frel
+	rm -f $(install_prefix)$(mandir)/frel.8
+
+clean:
+	rm -f *~ *.o frel
+
+distclean: clean
+	cd $(PCAPDIR); $(MAKE) distclean
+	cd $(LNETDIR); $(MAKE) distclean
+	rm -f Makefile config.h config.status config.cache config.log
+
+depend:
+	makedepend -- $(CFLAGS) -- $(SRCS)
+
+version.h: VERSION
+	echo "#define FREL_VERSION \"`cat VERSION`\"" > $@
+
+# DO NOT DELETE THIS LINE - make depend depends on it.

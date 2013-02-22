@@ -1,0 +1,14 @@
+
+- Clean up code termination so that doesn't leave jobs hanging around
+in the background on Ctl-C.
+
+- Extend fragproxy code to allow simultaneous multi-level IP and TCP
+attacks.
+
+- Add application-level proxies to do level 7 obfuscation at the same
+time. For instance, could do Rain Forest Puppy's tricks on Http
+traffic before doing IP / TCP level fragmentation as well with the
+fragproxy.
+
+--
+$Id: TODO,v 1.2 2001/01/10 23:14:37 asdfg Exp $

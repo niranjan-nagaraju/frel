@@ -1,0 +1,12 @@
+#    $Id: libnet.s2h,v 1.2 1999/04/13 18:13:37 route Exp $
+#
+#    src2html Description file for libnet
+#
+
+set     Srctree Libnet
+set     Htmlroot        .
+set     Htmldir libnet-src2html
+set     Newsrctree      newsrc
+dir     include         headers and prototypes
+dir     src             library sourcecode
+

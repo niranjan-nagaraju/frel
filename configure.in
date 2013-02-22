@@ -1,0 +1,72 @@
+dnl configure.in for frel
+dnl
+dnl lorg0r <lorgor@yahoo.com>
+dnl
+dnl $Id: configure.in,v 1.10 2001/01/20 02:16:27 asdfg Exp $
+
+AC_INIT(frel.c)
+
+AC_CONFIG_HEADER(config.h)
+
+dnl Check for programs.
+AC_PROG_CC
+dnl Check for some compiler options.
+if test -n "$GCC"; then
+   AC_MSG_CHECKING([if the compiler understands -pipe -Wall])
+   OLDCC="$CC"
+   CC="$CC -pipe -Wall"
+   AC_TRY_COMPILE(,,
+      AC_MSG_RESULT(yes),
+      CC="$OLDCC"
+      AC_MSG_RESULT(no))
+fi
+AC_PROG_INSTALL
+AC_PROG_MAKE_SET
+
+dnl Check for linux
+case "$target_os" in
+
+*linux*)
+    AC_DEFINE(__linux__)
+    ;;
+
+*)
+    ;;
+
+esac
+
+
+dnl Check for standard header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS(unistd.h sys/param.h)
+
+dnl Check for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+
+dnl Check for libraries and functions.
+AC_CHECK_FUNCS(strdup)
+
+dnl Solaris jonks
+AC_CHECK_LIB(nsl, gethostbyname)
+AC_CHECK_LIB(socket, socket)
+
+dnl Linux
+AC_CHECK_HEADERS(net/ethernet.h)
+AC_CHECK_HEADERS(netinet/ether.h)
+AC_DEFINE(_BSD_SOURCE)
+
+
+AC_CONFIG_SUBDIRS(libpcap-0.5 Libnet-1.0)
+
+AC_OUTPUT(Makefile)
+
+
+
+
+
+
+
+
+
+
+

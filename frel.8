@@ -1,0 +1,228 @@
+.\" yo there.
+.TH FREL 8  "10 January 2001"
+.SH NAME
+frel \- network intrusion detection evasion proxy
+.SH SYNOPSIS
+.na
+.B frel
+[
+.B \-i
+.I interface
+] [
+.B \-p
+] [
+.B \-v
+] [
+.B \-u
+.I `nnn,nnn-nnn`
+] [
+.B \-s
+.I xx:xx:xx:xx:xx:xx
+] [
+.B \-r
+.I xx:xx:xx:xx:xx:xx
+] [
+.B \-t
+.I xx:xx:xx:xx:xx:xx
+] [
+.B \-g
+.I hop
+] [
+.B \-G
+.I hopcount
+]
+.B \-m
+.I mode
+.I ATTACK
+.br
+.ad
+.SH DESCRIPTION
+.LP
+.I Frel
+is a program for routing network traffic in such a way as to elude
+most network intrusion detection systems. 
+.LP
+Frel implements a proxy that fragments outgoing traffic.
+.LP
+Most attacks implemented correspond to those listed in the Secure
+Networks ``Insertion, Evasion, and Denial of Service: Eluding Network
+Intrusion Detection'' paper of January 1998.
+.SH OPTIONS
+.LP
+.TP
+.B \-i
+Specify the interface to accept packets on.
+.TP
+.B \-p
+Preserve the entire protocol header in the first fragment. This is
+useful in bypassing packet filters that deny short IP fragments.
+.TP
+.B \-v
+Increase the verbosity of the output. Use twice for more effect.
+.TP
+.B \-u
+For mode 3 (takeover), specify the list of ports to intercept.
+.TP
+.B \-s
+Specify the MAC address to sniff on. Packets sent to this destination
+will pass through the fragmentation engine.
+.B \-r
+Specify the MAC address to forward to. Normally this is the MAC
+address of the default Lan router.
+.TP
+.B \-t
+For mode 3 (takeover), specify the MAC address of the machine that is
+to be taken over. Only the specified ports will be intercepted.
+.TP
+.B \-g
+Specify a hop along a loose source routed path. Can be used more than
+once to build a chain of hop points.
+.TP
+.B \-G
+Positions the "hop counter" within the list of hosts in the path of a
+source routed packet. Should be a multiple of 4. Can be set past the
+length of the loose source routed path to implement Anthony Osborne's
+Windows IP source routing attack of September 1999.
+.TP
+.B \-m
+Specifies mode of operation:
+.br
+\fI1\fR: Vanilla fragrouter configuration
+.br
+\fI2\fR: Fragproxy running on the same machine as the attacker
+.br
+\fI3\fR: Takeover operation
+.LP
+The following attack options are mutually exclusive - you may only
+specify one type of attack to run at a time.
+.TP
+.B \-B1
+\fIbaseline-1\fR: Normal IP forwarding.
+.TP
+.B \-F1
+\fIfrag-1\fR: Send data in ordered 8-byte IP fragments.
+.TP
+.B \-F2
+\fIfrag-2\fR: Send data in ordered 24-byte IP fragments.
+.TP
+.B \-F3
+\fIfrag-3\fR: Send data in ordered 8-byte IP fragments, with one
+fragment sent out of order.
+.TP
+.B \-F4
+\fIfrag-4\fR: Send data in ordered 8-byte IP fragments, duplicating
+the penultimate fragment in each packet.
+.TP
+.B \-F5
+\fIfrag-5\fR: Send data in out of order 8-byte IP fragments,
+duplicating the penultimate fragment in each packet.
+.TP
+.B \-F6
+\fIfrag-6\fR: Send data in ordered 8-byte IP fragments, sending the
+marked last fragment first.
+.TP
+.B \-F7
+\fIfrag-7\fR: Send data in ordered 16-byte IP fragments, preceding
+each fragment with an 8-byte null data fragment that overlaps the
+latter half of it. This amounts to the forward-overlapping 16-byte
+fragment rewriting the null data back to the real attack.
+.TP
+.B \-T1
+\fItcp-1\fR: Complete TCP handshake, send fake FIN and RST (with bad
+checksums) before sending data in ordered 1-byte segments.
+.\".TP
+.\".B \-T2
+.\"\fItcp-2\fR: Complete TCP handshake, send data with sequence numbers
+.\"wrapping back to zero.
+.\"bytes.
+.TP
+.B \-T3
+\fItcp-3\fR: Complete TCP handshake, send data in ordered 1-byte
+segments, duplicating the penultimate segment of each original TCP
+packet.
+.TP
+.B \-T4
+\fItcp-4\fR: Complete TCP handshake, send data in ordered 1-byte
+segments, sending an additional 1-byte segment which overlaps the
+penultimate segment of each original TCP packet with a null data
+payload.
+.TP
+.B \-T5
+\fItcp-5\fR: Complete TCP handshake, send data in ordered 2-byte
+segments, preceding each segment with a 1-byte null data segment that
+overlaps the latter half of it. This amounts to the
+forward-overlapping 2-byte segment rewriting the null data back to the
+real attack.
+.\".TP
+.\".B \-T6
+.\"\fItcp-6\fR: Complete TCP handshake, send data with sudden sequence
+.\"number jump of 1000 midway through the stream.
+.TP
+.B \-T7
+\fItcp-7\fR: Complete TCP handshake, send data in ordered 1-byte
+segments interleaved with 1-byte null segments for the same connection
+but with drastically different sequence numbers.
+.TP
+.B \-T8
+\fItcp-8\fR: Complete TCP handshake, send data in ordered 1-byte
+segments with one segment sent out of order.
+.TP
+.B \-T9
+\fItcp-9\fR: Complete TCP handshake, send data in out of order 1-byte
+segments.
+.\".TP
+.\".B \-C1
+.\"\fItcbc-1\fR: Do not complete TCP handshake, but send data as if it
+.\"did for some arbitrary seqeuence number.
+.TP
+.B \-C2
+\fItcbc-2\fR: Complete TCP handshake, send data in ordered 1-byte
+segments interleaved with SYN packets for the same connection
+parameters.
+.TP
+.B \-C3
+\fItcbc-3\fR: Do not complete TCP handshake, but send null data in
+ordered 1-byte segments as if one had occured. Then, complete a TCP
+handshake with same connection parameters, and send the real data in
+ordered 1-byte segments.
+.TP
+.B \-R1
+\fItcbt-1\fR: Complete TCP handshake, shut connection down with a RST,
+re-connect with drastically different sequence numbers and send data in
+ordered 1-byte segments.
+.TP
+.B \-I2
+\fIins-2\fR: Complete TCP handshake, send data in ordered 1-byte
+segments but with bad TCP checksums.
+.TP
+.B \-I3
+\fIins-3\fR: Complete TCP handshake, send data in ordered 1-byte
+segments but with no ACK flag set.
+.TP
+.B \-M1
+\fImisc-1\fR: Thomas Lopatic's Windows NT 4 SP2 IP fragmentation
+attack of July 1997 (see
+.I http://www.dataprotect.com/ntfrag/
+for details). This attack has only been implemented for UDP.
+.TP
+.B \-M2
+\fImisc-2\fR: John McDonald's Linux IP chains IP fragmentation attack
+of July 1998 (see
+.I http://www.dataprotect.com/ipchains/
+for details). This attack has only been implement for TCP and UDP.
+.SH "SEE ALSO"
+tcpdump(8), tcpreplay(8), pcap(3), libnet(3),
+fragrouter(8)
+.SH AUTHOR
+lorg0r
+.SH BUGS
+IP options will carry across all fragments of a packet. Fragrouter is
+not smart enough to determine which IP options are valid only in the
+first fragment. This is considered a feature, not a bug. :-)
+.LP
+Similarly, TCP options will carry across all segments of a split TCP
+packet - except for null data packets preceding a forward overwrite,
+which lack any TCP options in order to elude TCP PAWS elimination.
+.LP
+Please send bug reports to lorgor@yahoo.com.
+

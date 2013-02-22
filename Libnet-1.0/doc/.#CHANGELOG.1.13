@@ -1,0 +1,158 @@
+===============================================================================
+    LIBNET          (c) 1998, 1999  Mike D. Schiffman <mike@infonexus.com>
+                                    route|daemon9 <route@infonexus.com>
+                                     http://www.packetfactory.net/libnet
+===============================================================================
+
+Version     Released        Changes
+-------------------------------------------------------------------------------
+    0.99c   xx.xx.99        link_int -> libnet_link_int.
+                            Misc small testcode fixes.
+                            Added libnet_tcp_header and libnet_ip_header.
+
+    0.99b   5.06.99         Fixed a nasty UDP/TCP + data checksum bug.
+                            Header structure further divided into subfiles.
+                            Moved get_hwaddr into low-level interface locales.
+                            Fixed the BSD get_hwaddr (dugsong@anzen.com).
+                            Ported to BSD/OS 3.x.
+                            Added `LIBNET_VERSION` symbolic constant.
+                            build_ip with payload semantics changed (now
+                             requires a payload length which is more
+                             intuitive).
+                            Fixed the `disappearing MAC address problem`
+                             within the linux version of get_hwaddr().
+
+    0.99a   4.14.99         Linux 2.0.x kernels don't have <net/ethernet.h>
+                             0.99 included this header file without checking
+                             to see if it present.  This is now fixed.
+                            Non-x86 systems have no tcp_check function but the
+                             stub.c sourcefile did not check this.  This is now
+                             fixed.
+                            Added the utilities directory and get_mac.c.
+
+    0.99    4.13.99         Major manpage redux.
+                            Added (broken?) PF_PACKET support for Linux (see
+                             README.linux).
+                            Moved alot of m4 from configure.in to aclocal.m4.
+                            Added Linux m4 macro to detect PF_PACKET.
+                            Added build_icmp_unreach
+                            Added build_icmp_timestamp
+                            Added standard nomenclature for all the ICMP
+                             type/code symbolic constants (see the manpage).
+                            Changed internal network structure nomenclature.
+                            Decided to stop using the word nomenclature so much.
+                            Fixed semantics of get_ipaddr (s/PF_INET/AF_INET).
+                            Added a symlink in the install directory so libnet
+                             is also named `libpwrite`.
+                            Added ASN.1 conversion routines, mostly pilfered
+                             from ucd snmplib.
+                            Removed get_hwaddr from sockpacket.c and made the
+                             existing one portable to Linux.
+                            Added more testcode and changed testcode structure
+                             to be more intuitive.
+                            Added init_packet and destroy_packet.
+                            Added an arena allocator.
+                            Fixed alignment issues on SPARC and Alpha
+                             (possibly others with strict alignment
+                             requirements).
+                            Added a packet dumping routine.  Not fully tested.
+                            Testcode updates including a master testcode shell
+                             script.
+                            Added stub functions to ease the eventual
+                             transition to a more proper `libnet_*` function
+                             naming convention.  See README.stubs for more
+                             info.
+
+    0.10a    2.4.99         Added the libnet.s2h configuration file to the
+                             distribution.
+                            GLIBC fix.
+
+    0.10    1.31.99         Many low-level changes, same interface though.
+                            Split up the main libnet.h file into two files.
+                            Autoconf changes:
+                             checks to see if the underlying architecture
+                             needs to be aligned.
+                             flexible install location.
+                             explicitly set $CC option in Makefile.in.
+                            Added ensure-dir.sh.
+                            Changes DEBUG semantics as I was told the previous
+                             stuff broke on some compilers.
+                            Created a FreeBSD/OpenBSD ports entry.
+                            SGI snoop (drain) interface fixed.
+                            Solaris/HPUX DLPI interface fixed.
+                            Support for getting local IP addresses.
+                            Support for getting local hardware addresses.
+                            Added a DNS packet builder.
+                            Added an RIP packet builder.
+                            Added an ICMP MASKREQ/REPLY packet builder.
+                            Added ICMP at the link layer test code.
+                            Changed GLIBC version detection semantics.
+
+    0.9     12.15.98        Major changes/additions here...
+                            Added lowlevel packet building and writing
+                             routines with a codebase from libpcap.
+                            Broken DPLI support (fixme!).
+                            Added ethernet and ARP building routines.
+                            Added ICMP_ECHO building routine which led to the
+                             Discovery of an odd kernel panic bug under
+                             OpenBSD (see hook.c in test dir).
+                            Added IGMP building routine.
+                            Reworked autoconf script.
+                            Fixed Linux ip_sum vs. ip_csum naming issue.
+                            Fixed Solaris checksums (2.4, 2.5.x).
+                            Added NetBSD autoconf entry.
+                            Changed BSD_BYTE_SWAP semantics to correctly handle
+                             IP datagrams through BPF (see write_ip.c).
+
+    0.8c    11.10.98        Added more testcode.
+
+    0.8b    10.21.98        OK.  I THINK WE'VE FINALLY FIXED THAT GLIBC THING.
+                            Ported to alpha Linux.
+
+    0.8a    10.15.98        Added support for IP TOS bits (oops.  Broke
+                             backward compatibility again.  Like I said, don't
+                             rely on this until 1.x).
+
+    0.8     10.13.98        Added support for IP options.
+                            Added support for TCP options.
+                            Added a dummy version function.
+                            Fixed linux libc vs. glibc nomenclature discrepancy.
+                            Solaris checksums fixed for non-payload laden
+                             packets?
+
+    0.7b    09.22.98        Linux glibc/libc nomenclature anomoly still there.
+                            Fixed Linux/BSD icmp header size problem.
+
+    0.7a    08.26.98        Fixed payload support (see test code).
+
+    0.7     08.25.98        Solaris port (checksums broken -- Solaris has gay
+                             fucking quirks when it comes to checksumming on
+                             raw sockets).
+                            Added autoconf scripts.
+                            Added psuedorandom number generation code.
+                            Added payload support (breaks backward
+                            compatability and is untested).
+
+    0.6     06.21.98        Fixed UDP checksum.  Removed USE_NAME CPP option
+                             made it a run time decision.  Makes code more
+                             extensible, but breaks backward compatibility.
+
+    0.5     06.02.98        Added TCP/UDP/IP packet assembly routines.
+                            Added a checksum function.
+                            Added a manpage.
+                            Removed daemonizing function (BSD has one).
+                            UDP checksums broken...
+
+    0.4     01.12.98        IP checksum (x86 assembly implementation).
+
+    0.3     01.12.98        daemonizing function.
+
+    0.2     01.11.98        raw socket function changed to allow user 
+                             designated protocol for raw socket
+
+    0.1     01.05.98        Initial release, contains: 
+                             network byte order -> human readable IP address,
+                             human readable IP address -> network byte order,
+                             simple raw socket / IP_HDRINCL wrapper,
+                             TCP checksum (x86 assembly implementation)
+EOF

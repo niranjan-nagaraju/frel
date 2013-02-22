@@ -1,0 +1,44 @@
+Frel is a fairly heavily modified version of fragrouter.
+
+  Coder: lorg0r <lorgor@yahoo.com>
+
+Fragrouter author:
+
+   Dug Song
+
+Stel includes code from libnet and libpcap:
+
+   LBNL Network Research Group <libpcap@ee.lbl.gov>
+   ftp://ftp.ee.lbl.gov/libpcap.tar.Z
+
+   Mike D. Schiffman <mike@infonexus.com>
+   route|daemon9 <route@infonexus.com>
+   http://www.packetfactory.net/libnet
+
+Frel and fragrouter implement attacks originally described in:
+
+   T. Ptacek and T. Newsham, "Insertion, Evasion, and Denial of Service:
+   Eluding Network Intrusion Detection," Secure Networks, January 1998.
+   http://www.nai.com/services/support/whitepapers/security/IDSpaper.pdf
+
+The misc-1 Windows NT 4 SP2 attack was originally described by Thomas
+Lopatic <tl@dataprotect.com> in July 1997:
+
+   http://www.dataprotect.com/ntfrag/
+
+The misc-2 Linux IP chains attack was originally described and
+implemented by John McDonald <jm@dataprotect.com> in July 1999:
+
+   http://www.dataprotect.com/ipchains/
+
+The Windows IP source routing attack (as implemented via fragrouter's
+-g and -G options) was originally described by Anthony Osborne
+<Anthony_Osborne@nai.com> in September 1999 (see Microsoft Security
+Bulletin MS99-038 for more info).
+
+
+---
+$Id: CREDITS,v 1.3 2001/01/13 22:28:07 asdfg Exp $
+
+
+

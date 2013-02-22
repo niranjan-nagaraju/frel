@@ -1,0 +1,289 @@
+
+Building frel
+-------------
+
+To build frel on a supported platform:
+
+	% ./configure ; make
+
+If you get it to work on a platform not listed above, please let us
+know!
+
+Installing frel
+---------------
+
+To install frel, as root:
+
+	# make install
+
+This will install the frel binary and man page (by default,
+/usr/local/sbin/frel and /usr/local/man/man8/frel.8).
+
+Running frel
+------------
+
+IMPORTANT! Frel uses the Libnet package to do the low-level
+format. This means that frel needs to run on an Ethernet Lan. Don't
+even think about using it on a modem PPP link.
+
+Frel uses routing tricks to allow a fragrouter-style proxy to run on
+the same machine as the attacker.  Traffic originating from the attack
+machine is fragmented before being passed on to the LAN.
+
+
+Frel has three modes of operation:
+
+1) Vanilla  fragrouter 2-machine configuration
+2) Single machine configuration
+3) Partial takeover configuration
+
+
+
+mode -m 1) Vanilla fragrouter 2-machine configuration
+-----------------------------------------------------
+
+Here is the configuration:
+
+
+             attack                  fragmented attack 
+   +-------+        +------------+                      +--------+
+   |   A   |------->|     M      |- - - - - - - - - - ->|    V    |
+   +-------+        +------------+           |          +--------+
+                                             V
+       	                              +------+------+
+                                      | network IDS |
+                                      +-------------+
+
+
+
+To fragment all attacks going from host A (attacker) to host V
+(victim), via frel running on host M (middleman), do the following:
+
+1. On host A, set a host route to victim through middleman:
+
+	# route add victim M
+	add host victim: gateway M
+
+2. As root, start frel running on host M:
+
+	# frel -v -v -m 1 -F1  &2>&1
+	frel: frag-1: ordered 8-byte IP fragments
+
+
+3. Send attacks normally from A to V. Frel on M will accept traffic
+from A, fragment it, and forward the transformed stream to victim. The
+return path will NOT go through the fragmentation proxy (M).
+
+4. To stop frel, hit ^C (control-c). Watch out because frel sometimes
+leaves jobs running in the background. They can be eliminated by:
+
+	# jobs
+	# kill %1 %2 etc
+
+
+Note:
+
+Host A and M must be on the same subnet behind a router. V, the
+victim host, needs to be on a separate network entirely. This is
+because the route from the attacker to the victim is asymmetric when
+frel is running in this mode.
+
+However this restriction can be overcome by playing routing tricks. A
+has to be reconfigured to see itself on a small subnet with M on the
+same subnet. If A is 192.168.10.200, and M is 192.168.10.201, then on
+A:
+	# ifconfig eth0 192.168.10.200 netmask 255.255.255.128
+
+But on M the netmask is left as /24 (ie 255.255.255.0), the same as on V.
+
+With this configuration, M and V see themselves on the same subnet as
+A, but A will forward all packets through M. M will return packets
+directly to A.
+
+
+
+
+mode -m 2) Single machine configuration
+---------------------------------------
+
+In this configuration, frel runs on the same machine as the
+attacker. Here is the configuration:
+
+
+
+              fragmented attack 
+   +-------+                    +-------+          +--------+
+   |   A   |- - - - - - - - - - |   R   |- - - - ->|   V    |
+   +-------+                    +-------+          +--------+
+         |
+       	 | 
+         ---------> dummy middleman
+       	   attack    
+
+
+
+1. On host A, set up a dummy host to act as the middleman:
+	# arp -s middleman_IP_addr 00:11:22:33:44:55
+
+	To see this entry: arp -a
+
+
+2. On host A, set a host route to V (victim) through middleman:
+
+	# route add victim M
+	add host victim: gateway M
+
+
+3. Figure out what the Lan router's MAC address is. If need be, ping
+it and look in your arp cache. Or run a sniffer such as ethereal. To
+look in your arp cache:
+
+	# arp -a
+	? (192.168.10.199) at 00:C0:4F:3B:BD:DA [ether] on eth0
+
+So host 192.168.10.199 has mac address 00:C0:4F:3B:BD:DA.
+
+
+4. As root, start frel running on host A:
+
+	# ./frel -r 00:C0:4F:3B:BD:DA -s 00:11:22:33:44:55  -m 2 -F1 &2>&1
+	frel: frag-1: ordered 8-byte IP fragments
+
+The parameters tell frel to sniff on mac address
+00:11:22:33:44:55. All packets are to be fragmented and forwarded to
+the Lan router at 00:C0:4F:3B:BD:DA.
+
+
+3. Send attacks normally from A to V. Frel will intercept traffic from
+A, fragment it, and forward the transformed stream to victim. The
+return path will NOT go through frel, but will be accepted directly by
+A's IP stack.
+
+
+4. Stop frel as before.
+
+
+
+
+Notes:
+
+a) As before, A and M must be on the same subnet behind the Lan
+router.
+
+However by playing routing tricks you can attack a host V on the same
+subnet as you:
+
+- reconfigure the attack machine A to a small subnet that does not
+include V the victim machine. Be sure that M (the dummy host) is in
+the same subnet as A.
+
+- use V's mac address as the "Lan router" forwarding address.
+
+Then A will forward packets to M, frel will catch them and send them
+on to V. V returns the responses directly to A.
+
+
+
+b) You might want to use a real-looking dummy MAC address instead of
+00:11:22:33:44:55.
+
+
+
+mode -m 3) Partial takeover configuration
+-----------------------------------------
+
+In this configuration, the attack host A does a partial takeover of
+another machine T. Certain ports are intercepted so that A's attack
+packets appear to come from T.
+
+T continues to function normally on other ports.
+
+If T tries to send TCP traffic on the intercepted ports, then frel
+sends TCP RST to T and to V to kill the traffic.
+
+
+
+   +-------+
+   |   T   |
+   +-------+
+          fragmented attack 
+   +-------+        +----------+                      +--------+
+   |   A   |- - - ->|   R      |- - - - - - - - - - ->|   V    |
+   +-------+        +----------+                      +--------+
+         |
+       	 | 
+         ---------> dummy middleman
+       	   attack    
+                                             
+
+0) Reconfigure A to have the same IP address as T. See the README file
+for information about gratuitous arps.
+
+1-3) Same steps as  before:
+
+-set up the dummy host M as an entry in A's arp cache
+-set A's routing to go through M
+-figure out what the Lan router R's mac addr is.
+
+4) Next figure out what T's mac address is. This is the machine whose
+sessions you will be intercepting.
+
+5) As root, start frel running on host A:
+
+	# ./frel -r 00:C0:4F:3B:BD:DA -s 00:11:22:33:44:55  \
+                    -t 08:00:20:75:d1:9f -u 80 -m 3 -F1 &2>&1
+	frel: frag-1: ordered 8-byte IP fragments
+
+The parameters tell frel to take over the machine at mac
+08:00:20:75:d1:9f.  Only port 80 is to be intercepted.  Frel will
+sniff on mac address 00:11:22:33:44:55.  All packets are to be
+fragmented and forwarded to the Lan router at 00:C0:4F:3B:BD:DA.
+
+6) Now comes the fun part. Use a tool such as Dug Song's arpspoof (in
+the dsniff tool package) to poison R's arp cache. You want R to send
+T's packets to A.
+
+6) As before, send attacks normally from A to V. See the README file
+for more information about possible problems and how to overcome them.
+
+7) Stop frel as before.
+
+
+Note:
+
+Again all the hosts can be on the same subnet if the routing is
+configured correctly on A.
+
+
+
+
+Known Problems
+--------------
+
+If the attack machine runs a sniffer (or any other program which sets
+the interface in promiscuous mode), then frel will still work, but the
+latency in resending packets will be much worse.
+
+This is proof-of-concept test code. Worked for me. At least
+once. Promise.
+
+
+
+
+Troubleshooting
+---------------
+
+Frel with the option -v will become slightly more verbose.
+
+Frel with the options: -v -v will print a tcpdump-style output line
+for every packet/fragment it forwards. If you aren't seeing ANY
+output, frel isn't writing packets. In takeover mode however, be aware
+that forwarded packets are not dumped. Only fragmented traffic is
+recorded in the trace.
+
+To aid in debugging, recompile frel with -DDEBUG added to the
+CFLAGS line of the auto-generated top-level Makefile.
+
+
+---
+$Id: INSTALL,v 1.3 2001/01/13 22:29:20 asdfg Exp $
